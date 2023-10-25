@@ -1,0 +1,30 @@
+.App {
+
+}
+
+.count{
+    width: 500px;
+    border: 1px solid gray;
+    padding: 20px;
+    text-align: center;
+}
+
+.button{
+    background-color: blueviolet;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+    padding: 5px 10px;
+}
+
+.text{
+    margin: 0px 20px;
+    font-size: 30px;
+}
+
+.input-group span{
+    justify-content: center;
+    width:150px;
+}
