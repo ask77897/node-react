@@ -1,5 +1,8 @@
 import './App.css';
-import Posts from './components/ex01/Posts';
+import BookSearch from './components/ex03/BookSearch';
+import RouterPage from './components/ex03/RouterPage';
+// import RouterPage from './components/ex02/RouterPage';
+// import Posts from './components/ex01/Posts';
 // import Todos from './components/ex01/Todos';
 // import Product from './components/ex01/Product';
 // import Hello from './components/ex01/Hello';
@@ -9,7 +12,7 @@ import Posts from './components/ex01/Posts';
 const App = () => {
   return (
     <div className="App">
-        <Posts/>
+      <RouterPage/>
     </div>
   );
 }
