@@ -29,12 +29,29 @@
     width:150px;
 }
 
-.active{
-    color: white;
-    background-color: blueviolet;
-}
-
 a{
     text-decoration: none !important;
+    font-size: 1rem;
+    padding: 5px;
+}
+
+.home{
     font-size: 1.5rem;
+    color: white;
+    margin-right: 20px;
+}
+
+.navbar-nav .active{
+    color: white;
+}
+.navbar-nav a{
+    color: grey;
+}
+
+.ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
 }
