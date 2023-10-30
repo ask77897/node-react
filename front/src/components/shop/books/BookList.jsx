@@ -17,18 +17,27 @@ const BookList = () => {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(false);
     const [total, setTotal] = useState(0);
+    const [chcnt, setChcnt] = useState(0);
     const getBooks = async () => {
         const url = `/books/list.json?query=${query}&page=${page}&size=${size}`;
         setLoading(true);
         const res = await axios(url);
         // console.log(res);
-        setBooks(res.data.list);
+        let list = res.data.list;
+        list = list.map(book=>book && {...book, checked:false})
+        setBooks(list);
         setTotal(res.data.total);
         setLoading(false);
     }
     useEffect(() => {
         getBooks();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location]);
+    useEffect(()=>{
+        let cnt = 0;
+        books.forEach(book=>book.checked && cnt++);
+        setChcnt(cnt);
+    }, [books])
     const onChangePage = (page) => {
         navi(`${path}?page=${page}&query=${query}&size=${size}`);
         // console.log(page);
@@ -40,11 +49,38 @@ const BookList = () => {
     const onDelete = async(bid) => {
         if(!window.confirm(`${bid}번 도서를 삭제하시겠습니까?`)) return;
         const res = await axios.post('/books/delete', {bid});
-        if(res.data==0){
+        if(res.data===0){
             alert("삭제 실패");
         }else{
             alert("삭제 성공");
-            getBooks();
+            navi(`${path}?page=1&query=${query}&size=${size}`);
+        }
+    }
+    const onChangeAll = (e) => {
+        const list = books.map(book=>book && {...book, checked:e.target.checked})
+        setBooks(list);
+    }
+    const onChangeSingle = (e, isbn) => {
+        const list = books.map(book=>book.isbn===isbn ? {...book, checked:e.target.checked} : book)
+        setBooks(list);
+    }
+    const onClickDelete = () => {
+        if(chcnt===0){
+            alert("삭제할 도서를 선택하세요.")
+        }else{
+            if(window.confirm(`${chcnt}권을 삭제하시겠습니까?`)){
+                let count = 0;
+                books.forEach(async book=>{
+                    if(book.checked){
+                        const res = await axios.post('/books/delete', {bid:book.bid});
+                        if(res.data===1) count++
+                    }
+                });
+                setTimeout(()=>{
+                    alert(`${count}권이 삭제되었습니다.`);
+                    navi(`${path}?page=1&query=${query}&size=${size}`);
+                }, 1000)
+            }
         }
     }
     if (loading) return <div className='text-center my-5'><Spinner /></div>
@@ -60,9 +96,8 @@ const BookList = () => {
                         </InputGroup>
                     </form>
                 </Col>
-                <Col className='text-end'>
-                    검색 결과 : {total}권
-                </Col>
+                <Col className='mt-1'>검색 결과 : {total}권</Col>
+                <Col className='text-end'><Button variant='danger' size='sm' onClick={onClickDelete}>선택삭제</Button></Col>
             </Row>
             <Table striped>
                 <thead>
@@ -74,18 +109,20 @@ const BookList = () => {
                         <th>가격</th>
                         <th>등록일</th>
                         <th>삭제</th>
+                        <th><input type='checkbox' checked={books.length===chcnt} onChange={onChangeAll}/></th>
                     </tr>
                 </thead>
                 <tbody>
                     {books.map(book =>
                         <tr key={book.bid}>
                             <td>{book.bid}</td>
-                            <td><img src={book.image || "http://via.placeholder.com/170x250"} width="30" /></td>
+                            <td><img src={book.image || "http://via.placeholder.com/170x250"} alt='' width="30" /></td>
                             <td width="30%"><div className='ellipsis'>{book.title}</div></td>
                             <td width="20%"><div className='ellipsis'>{book.authors}</div></td>
                             <td>{book.fmtprice}</td>
                             <td>{book.fmtdate}</td>
                             <td><Button size='sm' variant='danger' onClick={()=>onDelete(book.bid)}>삭제</Button></td>
+                            <td><input type='checkbox' checked={book.checked} onChange={(e)=>onChangeSingle(e, book.isbn)}/></td>
                         </tr>)}
                 </tbody>
             </Table>

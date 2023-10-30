@@ -2,9 +2,17 @@ import React from 'react'
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 const HeaderPage = () => {
+    const navi = useNavigate();
+    const onLogout = (e) => {
+        e.preventDefault();
+        if(window.confirm("로그아웃 하시겠습니까?")){
+            sessionStorage.clear();
+            navi('/');
+        }
+    }
     return (
         <Navbar expand="lg" bg="primary" data-bs-theme="dark">
             <Container fluid>
@@ -20,7 +28,14 @@ const HeaderPage = () => {
                         <NavLink to="/books/list">도서목록</NavLink>
                     </Nav>
                     <Nav>
-                        <NavLink to="/users/login">Login</NavLink>
+                        {!sessionStorage.getItem('uid') ?
+                            <NavLink to="/users/login">Login</NavLink>
+                            :
+                            <>
+                                <NavLink to="/users/mypage">{sessionStorage.getItem('uid')}</NavLink>
+                                <NavLink to="/users/logout" onClick={onLogout}>Logout</NavLink>
+                            </>
+                        }
                     </Nav>
                 </Navbar.Collapse>
             </Container>

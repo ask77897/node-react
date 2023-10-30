@@ -18,7 +18,7 @@ const App = () => {
     <Container>
       <div className="App">
         <div>
-          <img src={background} width="100%"/>
+          <img src={background} alt='' width="100%"/>
         </div>
         <HeaderPage/>
         <RouterPage/>
