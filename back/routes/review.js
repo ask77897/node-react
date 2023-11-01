@@ -14,5 +14,26 @@ router.get('/list.json', function(req, res){ //localhost:5000/review/list.json?b
     });
 });
 
+//리뷰 등록
+router.post('/insert', function(req, res){
+    const uid=req.body.uid;
+    const bid=req.body.bid;
+    const contents=req.body.contents;
+    const sql=`insert into review(uid, bid, contents) values(?, ?, ?)`;
+    db.get().query(sql, [uid, bid, contents], function(err, rows){
+        if(err) return console.log("review2 : ", err), res.send('0');
+        else res.send('1');
+    });
+});
+
+//리뷰 삭제
+router.post('/delete', function(req, res){
+    const rid=req.body.rid;
+    const sql=`delete from review where rid=?`;
+    db.get().query(sql, [rid], function(err, rows){
+        if(err) return console.log("review3 : ", err), res.send('0');
+        else res.send('1');
+    });
+});
 
 module.exports = router;
