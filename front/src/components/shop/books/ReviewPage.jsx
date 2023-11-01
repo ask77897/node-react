@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import Pagination from 'react-js-pagination'
 import '../Pagination.css'
 
-const ReviewPage = ({ location }) => {
+const ReviewPage = ({ location, setBook, book }) => {
     const { bid } = useParams();
     const [reviews, setReviews] = useState([]);
     //console.log(pathname);
@@ -18,9 +18,10 @@ const ReviewPage = ({ location }) => {
         const res = await axios(url);
         //console.log (res.data)
         let list = res.data.list;
-        list = list.map(r => r && { ...r, ellipsis: true });
+        list = list.map(r => r && { ...r, ellipsis: true, edit: false, text:r.contents });
         setReviews(list);
         setTotal(res.data.total);
+        setBook({ ...book, rcnt: res.data.total })
     }
     const onClickWrite = () => {
         sessionStorage.setItem('target', location.pathname);
@@ -48,14 +49,35 @@ const ReviewPage = ({ location }) => {
             }
         }
     }
-    const onClickDelete = async(rid) => {
-        if(window.confirm("리뷰를 삭제하시겠습니까?")){
+    const onClickDelete = async (rid) => {
+        if (window.confirm("리뷰를 삭제하시겠습니까?")) {
             console.log(rid)
-            const res = await axios.post('/review/delete', {rid})
+            const res = await axios.post('/review/delete', { rid })
+            if (res.data === 1) {
+                getReviews();
+            }
+        }
+    }
+    const onReviewUpdate = async(rid, text, contents) => {
+        if(text===contents) return
+        if(window.confirm("리뷰를 수정하시겠습니까?")){
+            const res = await axios.post('/review/update', {rid, contents:text});
             if(res.data===1){
                 getReviews();
             }
         }
+    }
+    const onClickUpdate = (rid) => {
+        const list = reviews.map(r=>r.rid===rid ? {...r, edit:true} : r);
+        setReviews(list);
+    }
+    const onClickCancel = (rid) => {
+        const list = reviews.map(r=>r.rid===rid ? {...r, edit:false, text:r.contents} : r);
+        setReviews(list);
+    }
+    const onChangeContents = (e, rid) => {
+        const list = reviews.map(r=>r.rid===rid ? {...r, text:e.target.value} : r);
+        setReviews(list);
     }
     useEffect(() => {
         getReviews();
@@ -81,12 +103,24 @@ const ReviewPage = ({ location }) => {
                     </Col>
                     <Col>
                         <div className='small'>{review.fmtdate}</div>
-                        <div className={review.ellipsis && 'ellipsis2'} onClick={() => onChangeEllipsis(review.rid)}>[{review.rid}]{review.contents}</div>
-                        {sessionStorage.getItem("uid") === review.uid &&
-                            <div className='text-end mb-2'>
-                                <Button size='sm me-2'>수정</Button>
-                                <Button variant='danger' size='sm' onClick={()=>onClickDelete(review.rid)}>삭제</Button>
-                            </div>
+                        {!review.edit ?
+                            <>
+                                <div className={review.ellipsis && 'ellipsis2'} onClick={() => onChangeEllipsis(review.rid)}>[{review.rid}]{review.contents}</div>
+                                {sessionStorage.getItem("uid") === review.uid &&
+                                    <div className='text-end mb-2'>
+                                        <Button size='sm me-2' onClick={()=>onClickUpdate(review.rid)}>수정</Button>
+                                        <Button variant='danger' size='sm' onClick={() => onClickDelete(review.rid)}>삭제</Button>
+                                    </div>
+                                }
+                            </>
+                            :
+                            <>
+                                <Form.Control onChange={(e)=>onChangeContents(e, review.rid)} value={review.text} rows={5} as='textarea' />
+                                <div className='text-end mt-2'>
+                                    <Button size='sm me-2' onClick={()=>onReviewUpdate(review.rid, review.text, review.contents)}>저장</Button>
+                                    <Button variant='secondary' size='sm' onClick={()=>onClickCancel(review.rid)}>취소</Button>
+                                </div>
+                            </>
                         }
                     </Col>
                     <hr />

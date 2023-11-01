@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Button, Card, Col, Row, Spinner, Tab, Tabs } from 'react-bootstrap';
-import { NavLink, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { BsBookmarkHeart, BsBookmarkHeartFill } from 'react-icons/bs'
 import { RiMessage3Line } from 'react-icons/ri'
 import ReviewPage from './ReviewPage';
@@ -92,7 +92,7 @@ const BookInfo = () => {
                         <div className='px-5'>{book.contents}</div>
                     </Tab>
                     <Tab eventKey="profile" title="리뷰">
-                        <ReviewPage location={location} bid={book.bid}/>
+                        <ReviewPage location={location} setBook={setBook} book={book}/>
                     </Tab>
                 </Tabs>
             </div>
