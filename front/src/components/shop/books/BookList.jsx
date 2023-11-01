@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Col, Form, InputGroup, Row, Spinner, Table } from 'react-bootstrap';
 import Pagination from 'react-js-pagination'
 import '../Pagination.css'
@@ -117,7 +117,11 @@ const BookList = () => {
                         <tr key={book.bid}>
                             <td>{book.bid}</td>
                             <td><img src={book.image || "http://via.placeholder.com/170x250"} alt='' width="30" /></td>
-                            <td width="30%"><div className='ellipsis'>{book.title}</div></td>
+                            <td width="30%">
+                                <div className='ellipsis'><NavLink to={`/books/read/${book.bid}`}>{book.title}</NavLink></div>
+                                <span>리뷰 수:{book.rcnt}</span>
+                                <span>좋아요 수:{book.fcnt}</span>
+                            </td>
                             <td width="20%"><div className='ellipsis'>{book.authors}</div></td>
                             <td>{book.fmtprice}</td>
                             <td>{book.fmtdate}</td>

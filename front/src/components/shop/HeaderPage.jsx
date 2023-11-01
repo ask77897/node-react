@@ -3,12 +3,13 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { BiHomeAlt2 } from 'react-icons/bi'
 
 const HeaderPage = () => {
     const navi = useNavigate();
     const onLogout = (e) => {
         e.preventDefault();
-        if(window.confirm("로그아웃 하시겠습니까?")){
+        if (window.confirm("로그아웃 하시겠습니까?")) {
             sessionStorage.clear();
             navi('/');
         }
@@ -16,7 +17,7 @@ const HeaderPage = () => {
     return (
         <Navbar expand="lg" bg="primary" data-bs-theme="dark">
             <Container fluid>
-                <NavLink to="/" className="home">LOGO</NavLink>
+                <NavLink to="/" className="home"><BiHomeAlt2 style={{fontSize:'1.5rem'}}/></NavLink>
                 <Navbar.Toggle aria-controls="navbarScroll" />
                 <Navbar.Collapse id="navbarScroll">
                     <Nav

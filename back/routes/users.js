@@ -1,6 +1,29 @@
 var express = require('express');
 var router = express.Router();
 var db = require('../db');
+var multer = require('multer');
+
+//사진업로드
+var upload=multer({
+  storage: multer.diskStorage({
+    destination:(req, file, done)=>{
+      done(null, './public/upload/photo');
+    },
+    filename:(req, file, done)=>{
+      var fileName=Date.now()+".jpg";
+      done(null, fileName);
+    }
+  })
+});
+router.post('/update/photo', upload.single('file'), function(req, res){
+  const filename='/upload/photo/'+req.file.filename;
+  const uid=req.body.uid;
+  const sql=`update users set photo=? where uid=?`;
+  db.get().query(sql, [filename, uid], function(err, rows){
+    if(err) return console.log('photo1 : ', err), res.send('0');
+    else res.send('1');
+  })
+})
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -14,7 +37,7 @@ router.post('/login', function(req, res){
   const sql=`select * from users where uid=?`;
   
   db.get().query(sql, [uid], function(err, rows){
-    if(err) return('users1 : ',err)
+    if(err) return console.log('users1 : ',err)
     if(rows.length > 0){
       if(rows[0].upass == upass){
         res.send('1');
@@ -32,7 +55,7 @@ router.get('/read/:uid', function(req, res){ //localhost:5000/users/read/purple
   const uid=req.params.uid;
   const sql=`select *, date_format(regdate, '%Y-%m-%d %T') fmtdate, date_format(modidate, '%Y-%m-%d %T') fmtmodi from users where uid=?`;
   db.get().query(sql, [uid], function(err, rows){
-    if(err) return('users2 : ', err);
+    if(err) return console.log('users2 : ', err);
     res.send(rows[0]);
   });
 });
@@ -46,7 +69,7 @@ router.post('/update', function(req, res){
   const uid=req.body.uid;
   const sql=`update users set uname=?, phone=?, address1=?, address2=?, modidate=now() where uid=?`;
   db.get().query(sql, [uname, phone, address1, address2, uid], function(err, rows){
-    if(err) return('users3 : ', err), res.send('0');
+    if(err) return console.log('users3 : ', err), res.send('0');
     else res.send('1');
   });
 });

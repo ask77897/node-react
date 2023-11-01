@@ -37,9 +37,13 @@ const LoginPage = () => {
                 alert("비밀번호가 일치하지 않습니다.");
                 ref_upass.current.focus();
             }else{
-                alert("로그인 성공!");
                 sessionStorage.setItem('uid', uid);
-                navi('/');
+                alert("로그인 성공!");
+                if(sessionStorage.getItem("target")){
+                    navi(sessionStorage.getItem("target"));
+                }else{
+                    navi('/');
+                }
             }
         }
     }

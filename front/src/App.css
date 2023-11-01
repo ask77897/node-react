@@ -45,7 +45,7 @@ a{
     color: white;
 }
 .navbar-nav a{
-    color: grey;
+    color: lightgray;
 }
 
 .ellipsis {
@@ -58,5 +58,13 @@ a{
 
 .photo {
     border-radius: 50%;
-    border: 1px solid gray;
+    cursor: pointer;
+}
+
+.heart{
+    color: mediumpurple;
+    cursor: pointer;
+}
+small{
+    color: grey;
 }
