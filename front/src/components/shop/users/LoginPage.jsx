@@ -1,47 +1,69 @@
 import axios from 'axios';
-import React, { useRef } from 'react'
+import React, { useContext, useRef } from 'react'
 import { useState } from 'react'
 import { Button, Card, Col, Form, InputGroup, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom';
+import { BoxContext } from '../BoxContext';
 
 const LoginPage = () => {
     const ref_uid = useRef(null);
     const ref_upass = useRef(null);
     const navi = useNavigate();
+    const { setBox } = useContext(BoxContext)
     const [form, setForm] = useState({
-        uid : 'blue',
-        upass : 'pass'
+        uid: 'blue',
+        upass: 'pass'
     });
-    const {uid, upass} = form;
+    const { uid, upass } = form;
     const onChange = (e) => {
         setForm({
             ...form,
-            [e.target.name]:e.target.value
+            [e.target.name]: e.target.value
         });
     }
-    const onSubmit = async(e) => {
+    const onSubmit = async (e) => {
         e.preventDefault();
-        if(uid===''){
-            alert("아이디를 입력해주세요.");
+        if (uid === '') {
+            setBox({
+                show: true,
+                message: '아이디를 입력해주세요.'
+            })
+            //alert("아이디를 입력해주세요.");
             ref_uid.current.focus();
-        }else if(upass===''){
-            alert("비밀번호를 입력해주세요.");
+        } else if (upass === '') {
+            setBox({
+                show: true,
+                message: '비밀번호를 입력해주세요.'
+            })
+            //alert("비밀번호를 입력해주세요.");
             ref_upass.current.focus();
-        }else{
+        } else {
             const res = await axios.post('/users/login', form)
             //console.log(res);
-            if(res.data===0){
-                alert("아이디가 존재하지 않습니다.");
+            if (res.data === 0) {
+                setBox({
+                    show: true,
+                    message: '아이디가 존재하지 않습니다.'
+                })
+                //alert("아이디가 존재하지 않습니다.");
                 ref_uid.current.focus();
-            }else if(res.data===2){
-                alert("비밀번호가 일치하지 않습니다.");
+            } else if (res.data === 2) {
+                setBox({
+                    show: true,
+                    message: '비밀번호가 일치하지 않습니다.'
+                })
+                //alert("비밀번호가 일치하지 않습니다.");
                 ref_upass.current.focus();
-            }else{
+            } else {
                 sessionStorage.setItem('uid', uid);
-                alert("로그인 성공!");
-                if(sessionStorage.getItem("target")){
+                setBox({
+                    show: true,
+                    message: '로그인 성공!'
+                })
+                //alert("로그인 성공!");
+                if (sessionStorage.getItem("target")) {
                     navi(sessionStorage.getItem("target"));
-                }else{
+                } else {
                     navi('/');
                 }
             }

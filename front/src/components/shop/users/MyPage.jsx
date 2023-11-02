@@ -1,11 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { Button, Card, Col, Row, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
+import { BoxContext } from '../BoxContext'
 
 const MyPage = () => {
   const navi = useNavigate();
   const ref_file = useRef(null);
+  const { setBox } = useContext(BoxContext);
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({
     uid: '',
@@ -27,26 +29,40 @@ const MyPage = () => {
     setUser(res.data);
     setLoading(false);
   }
-  const onChangeFile = (e) =>{
+  const onChangeFile = (e) => {
     setUser({
       ...user,
-      photo:URL.createObjectURL(e.target.files[0]),
-      file:e.target.files[0]
+      photo: URL.createObjectURL(e.target.files[0]),
+      file: e.target.files[0]
     })
   }
 
-  const onUpdatePhoto = async() => {
-    if(!file){
-      alert("수정할 사진을 선택해주세요.");
-    }else{
-      if(window.confirm("사진을 수정하시겠습니까?")){
+  const onUpdatePhoto = async () => {
+    if (!file) {
+      setBox({
+        show: true,
+        message: "수정할 사진을 선택해주세요."
+      })
+      //alert("수정할 사진을 선택해주세요.");
+    } else {
+      setBox({
+        show: true,
+        message: '사진을 수정하시겠습니까?',
+        action: async() => {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("uid", uid);
+          await axios.post('/users/update/photo', formData);
+        }
+      })
+      /*if (window.confirm("사진을 수정하시겠습니까?")) {
         //사진저장
         const formData = new FormData();
         formData.append("file", file);
         formData.append("uid", uid);
         await axios.post('/users/update/photo', formData);
         alert("사진이 변경되었습니다.")
-      }
+      }*/
     }
   }
 
@@ -62,8 +78,8 @@ const MyPage = () => {
         <Col md={6}>
           <Card className='p-5'>
             <div>
-              <img src={photo || 'http://via.placeholder.com/200x200'} alt='' onClick={()=>ref_file.current.click()} width="200" className='photo'/>
-              <input type='file'onChange={onChangeFile} ref={ref_file} style={{display:"none"}}/>
+              <img src={photo || 'http://via.placeholder.com/200x200'} alt='' onClick={() => ref_file.current.click()} width="200" className='photo' />
+              <input type='file' onChange={onChangeFile} ref={ref_file} style={{ display: "none" }} />
               <br />
               <Button size='sm' className='mt-2' onClick={onUpdatePhoto}>이미지수정</Button>
               <hr />

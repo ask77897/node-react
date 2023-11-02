@@ -1,13 +1,15 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button, Card, Col, Row, Spinner, Tab, Tabs } from 'react-bootstrap';
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { BsBookmarkHeart, BsBookmarkHeartFill } from 'react-icons/bs'
 import { RiMessage3Line } from 'react-icons/ri'
 import ReviewPage from './ReviewPage';
+import { BoxContext } from '../BoxContext';
 
 const BookInfo = () => {
     const navi = useNavigate();
+    const { setBox } = useContext(BoxContext)
     const location = useLocation();
     const { bid } = useParams();
     const [book, setBook] = useState("");
@@ -38,6 +40,19 @@ const BookInfo = () => {
         await axios.post('/books/delete/favorite', { uid: sessionStorage.getItem('uid'), bid: bid });
         getBook();
     }
+    const onClickCart = async () => {
+        const res = await axios.post("/cart/insert", { bid, uid: sessionStorage.getItem("uid") });;
+        if (res.data === 0) {
+            setBox({
+                show: true,
+                message: res.data === 0 ? `장바구니에 등록되었습니다.\n쇼핑을 계속 하시겠습니까?` : `이미 장바구니에 존재합니다.\n쇼핑을 계속 하시겠습니까?`,
+                action: () => {
+                    location.href = "/"
+                }
+            })
+        }
+    }
+
 
     //console.log(bid);
     if (loading) return <div className='text-center my-5'><Spinner /></div>
@@ -73,10 +88,12 @@ const BookInfo = () => {
                             </span>
                         }
                         <hr />
-                        <div>
-                            <Button variant='secondary' className='me-2'>장바구니</Button>
-                            <Button>바로구매</Button>
-                        </div>
+                        {sessionStorage.getItem("uid") &&
+                            <div>
+                                <Button variant='secondary' className='me-2' onClick={onClickCart}>장바구니</Button>
+                                <Button>바로구매</Button>
+                            </div>
+                        }
                     </Col>
                 </Row>
             </Card>
@@ -92,7 +109,7 @@ const BookInfo = () => {
                         <div className='px-5'>{book.contents}</div>
                     </Tab>
                     <Tab eventKey="profile" title="리뷰">
-                        <ReviewPage location={location} setBook={setBook} book={book}/>
+                        <ReviewPage location={location} setBook={setBook} book={book} />
                     </Tab>
                 </Tabs>
             </div>

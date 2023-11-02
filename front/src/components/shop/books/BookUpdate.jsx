@@ -1,12 +1,14 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { /*NavLink,*/ useNavigate, useParams } from 'react-router-dom'
 import { Button, Card, Col, Form, InputGroup, Row, Spinner } from 'react-bootstrap'
+import { BoxContext } from '../BoxContext';
 
 const BookUpdate = () => {
     const navi = useNavigate();
     const [loading, setloading] = useState(false);
     const { bid } = useParams();
+    const { setBox } = useContext(BoxContext)
     const [book, setBook] = useState({
         bid: '',
         title: '',
@@ -33,21 +35,42 @@ const BookUpdate = () => {
     const onChange = (e) => {
         setBook({
             ...book,
-            [e.target.name]:e.target.value
+            [e.target.name]: e.target.value
         })
     }
-    const onSubmit = async(e) => {
+    const onSubmit = async (e) => {
         e.preventDefault();
-        if(window.confirm("수정된 내용을 저장하시겠습니까?")){
+        setBox({
+            show: true,
+            message: "수정된 내용을 저장하시겠습니까?",
+            action: async () => {
+                const res = await axios.post('/books/update', book);
+                if (res.data === 0) {
+                    setBox({
+                        show:true,
+                        message:'수정 실패'
+                    })
+                    //alert("수정 실패");
+                } else {
+                    setBox({
+                        show:true,
+                        message:'수정 성공'
+                    })
+                    //alert("수정 완료");
+                    navi(`/books/read/${bid}`);
+                }
+            }
+        })
+        /*if (window.confirm("수정된 내용을 저장하시겠습니까?")) {
             //수정하기
             const res = await axios.post('/books/update', book);
-            if(res.data===0){
+            if (res.data === 0) {
                 alert("수정 실패");
-            }else{
+            } else {
                 alert("수정 완료");
                 navi(`/books/read/${bid}`);
             }
-        }
+        }*/
     }
     useEffect(() => {
         getBook();
@@ -63,28 +86,28 @@ const BookUpdate = () => {
                         <form onSubmit={onSubmit}>
                             <InputGroup className='mb-2'>
                                 <InputGroup.Text>도서코드</InputGroup.Text>
-                                <Form.Control value={bid} name='bid' onChange={onChange} readOnly/>
+                                <Form.Control value={bid} name='bid' onChange={onChange} readOnly />
                             </InputGroup>
                             <InputGroup className='mb-2'>
                                 <InputGroup.Text>제목</InputGroup.Text>
-                                <Form.Control value={title} name='title' onChange={onChange}/>
+                                <Form.Control value={title} name='title' onChange={onChange} />
                             </InputGroup>
                             <InputGroup className='mb-2'>
                                 <InputGroup.Text>가격</InputGroup.Text>
-                                <Form.Control value={price} name='price' onChange={onChange}/>
+                                <Form.Control value={price} name='price' onChange={onChange} />
                             </InputGroup>
                             <InputGroup className='mb-2'>
                                 <InputGroup.Text>저자</InputGroup.Text>
-                                <Form.Control value={authors} name='authors' onChange={onChange}/>
+                                <Form.Control value={authors} name='authors' onChange={onChange} />
                             </InputGroup>
                             <InputGroup className='mb-2'>
                                 <InputGroup.Text>출판사</InputGroup.Text>
-                                <Form.Control value={publisher} name='publisher' onChange={onChange}/>
+                                <Form.Control value={publisher} name='publisher' onChange={onChange} />
                             </InputGroup>
                             <Form.Control as="textarea" rows={10} name='contents' onChange={onChange}>{contents}</Form.Control>
                             <div className='text-center my-3'>
                                 <Button className='me-2' type='submit'>정보수정</Button>
-                                <Button variant='secondary' onClick={()=>getBook()}>수정취소</Button>
+                                <Button variant='secondary' onClick={() => getBook()}>수정취소</Button>
                             </div>
                         </form>
                     </Card>

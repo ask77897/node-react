@@ -1,7 +1,8 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button, Col, Form, InputGroup, Row, Spinner, Table } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { BoxContext } from '../BoxContext';
 
 
 const BookSearch = () => {
@@ -16,6 +17,7 @@ const BookSearch = () => {
     const [total, setTotal] = useState(0);
     const [end, setEnd] = useState(false);
     const [chcnt, setChcnt] = useState(0);
+    const { setBox } = useContext(BoxContext);
     const getBooks = async () => {
         const url = `https://dapi.kakao.com/v3/search/book?target=title&query=${query}&size=5&page=${page}`;
         const config = {
@@ -47,13 +49,17 @@ const BookSearch = () => {
     const onSubmit = (e) => {
         e.preventDefault();
         if (query === "") {
-            alert("검색어를 입력하세요.");
+            setBox({
+                show: true,
+                message: '검색어를 입력하세요.'
+            })
+            //alert("검색어를 입력하세요.");
         } else {
             navi(`${path}?query=${query}&page=1`)
         }
     }
     const onInsert = async (book) => {
-        if (window.confirm("새로운 도서를 등록하시겠습니까?")) {
+        /*if (window.confirm("새로운 도서를 등록하시겠습니까?")) {
             // console.log(book);
             const url = '/books/insert';
             const res = await axios.post(url, { ...book, authors: book.authors.join() });
@@ -63,7 +69,28 @@ const BookSearch = () => {
             } else {
                 alert("이미 등록된 도서입니다.")
             }
-        }
+        }*/
+        setBox({
+            show: true,
+            message: '새로운 고서를 등록하시겠습니까?',
+            action: async () => {
+                const url = '/books/insert';
+                const res = await axios.post(url, { ...book, authors: book.authors.join() });
+                if (res.data === 0) {
+                    setBox({
+                        show: true,
+                        message: "도서가 등록되었습니다."
+                    })
+                    //alert("도서가 등록되었습니다.")
+                } else {
+                    setBox({
+                        show: true,
+                        message: "이미 등록된 도서입니다."
+                    })
+                    //alert("이미 등록된 도서입니다.")
+                }
+            }
+        })
     }
     const onChangeAll = (e) => {
         const docs = books.map(book => book && { ...book, checked: e.target.checked })
@@ -75,9 +102,34 @@ const BookSearch = () => {
     }
     const onClickSave = async () => {
         if (chcnt === 0) {
-            alert("저장할 도서를 선택하세요.")
+            setBox({
+                show: true,
+                message: "저장할 도서를 선택하세요."
+            })
+            //alert("저장할 도서를 선택하세요.")
         } else {
-            if (window.confirm(`${chcnt}권을 저장하시겠습니까?`)) {
+            setBox({
+                show: true,
+                message: `${chcnt}권을 저장하시겠습니까?`,
+                action: async() => {
+                    let count = 0;
+                    for (const book of books) {
+                        if (book.checked) {
+                            //도서 저장
+                            const url = '/books/insert';
+                            const res = await axios.post(url, { ...book, authors: book.authors.join() });
+                            if (res.data === 0) count++
+                        }
+                    };
+                    setBox({
+                        show:true,
+                        message:`${count}권이 저장되었습니다.`
+                    })
+                    //alert(`${count}권이 저장되었습니다.`);
+                    setBooks(books.map(book => book && { ...book, checked: false }));
+                }
+            })
+            /*if (window.confirm(`${chcnt}권을 저장하시겠습니까?`)) {
                 let count = 0;
                 for (const book of books) {
                     if (book.checked) {
@@ -89,7 +141,7 @@ const BookSearch = () => {
                 };
                 alert(`${count}권이 저장되었습니다.`);
                 setBooks(books.map(book => book && { ...book, checked: false }));
-            }
+            }*/
         }
     }
 

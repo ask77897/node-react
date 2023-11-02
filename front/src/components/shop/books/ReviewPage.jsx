@@ -1,7 +1,8 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Button, Col, Form, Row } from 'react-bootstrap'
 import { useParams } from 'react-router-dom';
+import { BoxContext } from '../BoxContext'
 import Pagination from 'react-js-pagination'
 import '../Pagination.css'
 
@@ -11,6 +12,7 @@ const ReviewPage = ({ location, setBook, book }) => {
     //console.log(pathname);
     const [page, setPage] = useState(1);
     const [total, setTotal] = useState(0);
+    const { setBox } = useContext(BoxContext)
     const [contents, setContents] = useState('');
     const size = 3;
     const getReviews = async () => {
@@ -18,7 +20,7 @@ const ReviewPage = ({ location, setBook, book }) => {
         const res = await axios(url);
         //console.log (res.data)
         let list = res.data.list;
-        list = list.map(r => r && { ...r, ellipsis: true, edit: false, text:r.contents });
+        list = list.map(r => r && { ...r, ellipsis: true, edit: false, text: r.contents });
         setReviews(list);
         setTotal(res.data.total);
         setBook({ ...book, rcnt: res.data.total })
@@ -36,7 +38,10 @@ const ReviewPage = ({ location, setBook, book }) => {
     }
     const onClickReview = async () => {
         if (contents === "") {
-            alert("리뷰를 입력해주세요.");
+            setBox({
+                show: true,
+                message: "리뷰을 입력하세요."
+            });
         } else {
             const res = await axios.post('/review/insert', {
                 uid: sessionStorage.getItem("uid"),
@@ -49,7 +54,8 @@ const ReviewPage = ({ location, setBook, book }) => {
             }
         }
     }
-    const onClickDelete = async (rid) => {
+    const onClickDelete = (rid) => {
+        /*
         if (window.confirm("리뷰를 삭제하시겠습니까?")) {
             console.log(rid)
             const res = await axios.post('/review/delete', { rid })
@@ -57,26 +63,59 @@ const ReviewPage = ({ location, setBook, book }) => {
                 getReviews();
             }
         }
+        */
+        setBox({
+            show: true,
+            message: `${rid}번 리뷰를 삭제하시겠습니까?`,
+            action: async () => {
+                const res = await axios.post('/review/delete', { rid })
+                if (res.data === 1) {
+                    getReviews();
+                }
+            }
+        })
     }
-    const onReviewUpdate = async(rid, text, contents) => {
-        if(text===contents) return
-        if(window.confirm("리뷰를 수정하시겠습니까?")){
-            const res = await axios.post('/review/update', {rid, contents:text});
-            if(res.data===1){
+    const onReviewUpdate = async (rid, text, contents) => {
+        if (text === contents) return;
+        /*if (window.confirm("리뷰를 수정하시겠습니까?")) {
+            const res = await axios.post('/review/update', { rid, contents: text });
+            if (res.data === 1) {
                 getReviews();
             }
-        }
+        }*/
+        setBox({
+            show: true,
+            message: "리뷰를 수정하시겠습니까?",
+            action: async () => {
+                const res = await axios.post('/review/update', { rid, contents: text });
+                if (res.data === 1) {
+                    getReviews();
+                }
+            }
+        })
     }
     const onClickUpdate = (rid) => {
-        const list = reviews.map(r=>r.rid===rid ? {...r, edit:true} : r);
+        const list = reviews.map(r => r.rid === rid ? { ...r, edit: true } : r);
         setReviews(list);
     }
-    const onClickCancel = (rid) => {
-        const list = reviews.map(r=>r.rid===rid ? {...r, edit:false, text:r.contents} : r);
-        setReviews(list);
+    const onClickCancel = (rid, text, contents) => {
+        if (text !== contents) {
+            //if (!window.confirm("리뷰 수정을 취소하시겠습니까?")) return
+            setBox({
+                show: true,
+                message: '리뷰 수정을 취소하시겠습니까?',
+                action: () => {
+                    const list = reviews.map(r => r.rid === rid ? { ...r, edit: false, text: r.contents } : r);
+                    setReviews(list);
+                }
+            })
+        } else {
+            const list = reviews.map(r => r.rid === rid ? { ...r, edit: false, text: r.contents } : r);
+            setReviews(list);
+        }
     }
     const onChangeContents = (e, rid) => {
-        const list = reviews.map(r=>r.rid===rid ? {...r, text:e.target.value} : r);
+        const list = reviews.map(r => r.rid === rid ? { ...r, text: e.target.value } : r);
         setReviews(list);
     }
     useEffect(() => {
@@ -108,17 +147,17 @@ const ReviewPage = ({ location, setBook, book }) => {
                                 <div className={review.ellipsis && 'ellipsis2'} onClick={() => onChangeEllipsis(review.rid)}>[{review.rid}]{review.contents}</div>
                                 {sessionStorage.getItem("uid") === review.uid &&
                                     <div className='text-end mb-2'>
-                                        <Button size='sm me-2' onClick={()=>onClickUpdate(review.rid)}>수정</Button>
+                                        <Button size='sm me-2' onClick={() => onClickUpdate(review.rid)}>수정</Button>
                                         <Button variant='danger' size='sm' onClick={() => onClickDelete(review.rid)}>삭제</Button>
                                     </div>
                                 }
                             </>
                             :
                             <>
-                                <Form.Control onChange={(e)=>onChangeContents(e, review.rid)} value={review.text} rows={5} as='textarea' />
+                                <Form.Control onChange={(e) => onChangeContents(e, review.rid)} value={review.text} rows={5} as='textarea' />
                                 <div className='text-end mt-2'>
-                                    <Button size='sm me-2' onClick={()=>onReviewUpdate(review.rid, review.text, review.contents)}>저장</Button>
-                                    <Button variant='secondary' size='sm' onClick={()=>onClickCancel(review.rid)}>취소</Button>
+                                    <Button size='sm me-2' onClick={() => onReviewUpdate(review.rid, review.text, review.contents)}>저장</Button>
+                                    <Button variant='secondary' size='sm' onClick={() => onClickCancel(review.rid, review.text, review.contents)}>취소</Button>
                                 </div>
                             </>
                         }

@@ -1,12 +1,14 @@
 import axios from 'axios';
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 import { Button, Card, Col, Row, Spinner } from 'react-bootstrap'
+import { BoxContext } from '../BoxContext';
 
 const BookRead = () => {
     const ref_file = useRef(null);
     const [loading, setloading] = useState(false);
     const { bid } = useParams();
+    const { setBox } = useContext(BoxContext);
     const [book, setBook] = useState({
         bid: '',
         title: '',
@@ -41,11 +43,39 @@ const BookRead = () => {
             file: e.target.files[0]
         })
     }
-    const onUpdateImage = async() => {
-        if(!file){
-            alert("변경할 이미지를 선택해주세요");
-        }else{
-            if(window.confirm("이미지를 변경하시겠습니까?")){
+    const onUpdateImage = async () => {
+        if (!file) {
+            setBox({
+                show: true,
+                message: "변경할 이미지를 선택해주세요"
+            })
+            //alert("변경할 이미지를 선택해주세요");
+        } else {
+            setBox({
+                show: true,
+                message: "이미지를 변경하시겠습니까?",
+                action: async () => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('bid', bid);
+                    const res = await axios.post('/books/update/image', formData);
+                    if (res.data === 0) {
+                        setBox({
+                            show:true,
+                            message:"이미지 변경 실패"
+                        })
+                        //alert("이미지 변경 실패");
+                    } else {
+                        setBox({
+                            show:true,
+                            message:"이미지 변경 성공"
+                        })
+                        //alert("이미지 변경 성공");
+                        getBook();
+                    }
+                }
+            })
+            /*if(window.confirm("이미지를 변경하시겠습니까?")){
                 //이미지변경
                 const formData = new FormData();
                 formData.append('file', file);
@@ -57,7 +87,7 @@ const BookRead = () => {
                     alert("이미지 변경 성공");
                     getBook();
                 }
-            }
+            }*/
         }
     }
     useEffect(() => {
@@ -75,7 +105,7 @@ const BookRead = () => {
                         <Row>
                             <Col>
                                 <div>
-                                    <img src={image || "http://via.placeholder.com/170x250"} alt='' width={200} onClick={() => ref_file.current.click()} style={{cursor:'pointer'}} />
+                                    <img src={image || "http://via.placeholder.com/170x250"} alt='' width={200} onClick={() => ref_file.current.click()} style={{ cursor: 'pointer' }} />
                                     <input type='file' onChange={onChangeFile} style={{ display: 'none' }} ref={ref_file} />
                                 </div>
                                 <Button size='sm mt-2 w-100' onClick={onUpdateImage}>이미지수정</Button>
@@ -89,7 +119,7 @@ const BookRead = () => {
                                     <div>출판사 : {publisher}</div>
                                     <div>등록일 : {fmtdate}</div>
                                     <div>ISBN : {isbn}</div>
-                                    <hr/>
+                                    <hr />
                                     <div>
                                         {fcnt} : {ucnt} : {rcnt}
                                     </div>

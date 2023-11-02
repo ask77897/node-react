@@ -2,6 +2,9 @@ import './App.css';
 import HeaderPage from './components/shop/HeaderPage';
 import { Container } from "react-bootstrap"
 import RouterPage from './components/shop/RouterPage';
+import { useState } from 'react';
+import { BoxContext } from './components/shop/BoxContext';
+import BoxModal from './components/shop/BoxModal';
 // import BookSearch from './components/ex03/BookSearch';
 // import RouterPage from './components/ex03/RouterPage';
 // import RouterPage from './components/ex02/RouterPage';
@@ -14,16 +17,20 @@ import RouterPage from './components/shop/RouterPage';
 
 const App = () => {
   const background = "/images/header02.png"
+  const [box, setBox] = useState({
+    show:false,
+    message:'',
+    action:null
+  })
   return (
-    <Container>
-      <div className="App">
-        <div>
+    <BoxContext.Provider value={{box, setBox}}>
+      <Container>
           <img src={background} alt='' width="100%"/>
-        </div>
-        <HeaderPage/>
-        <RouterPage/>
-      </div>
-    </Container>
+          <HeaderPage/>
+          <RouterPage/>
+          {box.show && <BoxModal/>}
+      </Container>
+    </BoxContext.Provider>
   );
 }
 
