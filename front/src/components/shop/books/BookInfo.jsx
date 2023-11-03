@@ -42,15 +42,14 @@ const BookInfo = () => {
     }
     const onClickCart = async () => {
         const res = await axios.post("/cart/insert", { bid, uid: sessionStorage.getItem("uid") });;
-        if (res.data === 0) {
-            setBox({
-                show: true,
-                message: res.data === 0 ? `장바구니에 등록되었습니다.\n쇼핑을 계속 하시겠습니까?` : `이미 장바구니에 존재합니다.\n쇼핑을 계속 하시겠습니까?`,
-                action: () => {
-                    location.href = "/"
-                }
-            })
-        }
+        setBox({
+            show: true,
+            message: res.data === 0 ? `장바구니에 등록되었습니다.\n쇼핑을 계속 하시겠습니까?` : `이미 장바구니에 존재합니다.\n쇼핑을 계속 하시겠습니까?`,
+            action: () => {
+                window.location.href = "/"
+            }
+        })
+
     }
 
 
