@@ -83,4 +83,15 @@ router.get('/list.json', function(req, res){ //localhost:5000/orders/list.json
     })
 })
 
+//주문상태변경
+router.post('/update', function(req, res){
+    const pid=req.body.pid;
+    const status=req.body.status;
+    const sql=`update purchase set status=? where pid=?`;
+    db.get().query(sql, [status, pid], function(err, rows){
+        if(err) return console.log("order6 : ", err), res.send('0');
+        else return res.send('1');
+    })
+})
+
 module.exports = router;

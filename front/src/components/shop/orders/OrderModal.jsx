@@ -25,7 +25,7 @@ const OrderModal = ({ purchase, sum }) => {
 
     return (
         <>
-            <Button variant="primary" onClick={handleShow}>
+            <Button size='sm' variant="primary" onClick={handleShow}>
                 주문상품
             </Button>
 

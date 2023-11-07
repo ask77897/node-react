@@ -1,16 +1,18 @@
 import axios from 'axios'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button, Col, InputGroup, Row, Spinner, Table, Form } from 'react-bootstrap'
 import Pagination from 'react-js-pagination'
 import '../Pagination.css'
 import OrderModal from './OrderModal'
+import { BoxContext } from '../BoxContext'
 
 const OrderAdmin = () => {
     const [loading, setLoading] = useState(false)
     const [list, setList] = useState([]);
     const [query, setQuery] = useState('');
     const [total, setTotal] = useState(0);
+    const { setBox } = useContext(BoxContext);
     const location = useLocation();
     const navi = useNavigate();
     const search = new URLSearchParams(location.search);
@@ -33,6 +35,20 @@ const OrderAdmin = () => {
         e.preventDefault();
         navi(`/orders/admin?page=1&size=${size}&query=${query}`);
     }
+    const onChangeStatus = (e, pid) => {
+        const plist = list.map(p => p.pid === pid ? { ...p, status: e.target.value } : p);
+        setList(plist);
+    }
+    const onClickChange = (pid, status) => {
+        setBox({
+            show: true,
+            message: `${pid}번 주문상태를 ${status}로 변경하시겠습니까?`,
+                action: async() => {
+                    await axios.post('/orders/update', {pid, status});
+                    getList();
+            }
+        })
+    }
 
     useEffect(() => {
         getList();
@@ -47,7 +63,7 @@ const OrderAdmin = () => {
                 <Col md={4}>
                     <form onSubmit={onSubmit}>
                         <InputGroup>
-                            <Form.Control placeholder='주문자, 주소, 전화번호' value={query} onChange={(e)=>setQuery(e.target.value)} />
+                            <Form.Control placeholder='주문자, 주소, 전화번호' value={query} onChange={(e) => setQuery(e.target.value)} />
                             <Button type='submit'>검색</Button>
                         </InputGroup>
                     </form>
@@ -65,6 +81,7 @@ const OrderAdmin = () => {
                         <th>배송지</th>
                         <th>금액</th>
                         <th>주문상태</th>
+                        <th>상태변경</th>
                         <th>주문상품</th>
                     </tr>
                 </thead>
@@ -77,6 +94,19 @@ const OrderAdmin = () => {
                             <td>{p.raddress1}</td>
                             <td className='text-end'>{p.fmtsum}원</td>
                             <td>{p.str_status}</td>
+                            <td>
+                                <InputGroup>
+                                    <Form.Select value={p.status} onChange={(e) => onChangeStatus(e, p.pid)}>
+                                        <option value="0">결제확인중</option>
+                                        <option value="1">결제확인</option>
+                                        <option value="2">배송준비중</option>
+                                        <option value="3">배송중</option>
+                                        <option value="4">배송완료</option>
+                                        <option value="5">주문완료</option>
+                                    </Form.Select>
+                                    <Button size='sm' onClick={()=>onClickChange(p.pid, p.status)}>변경</Button>
+                                </InputGroup>
+                            </td>
                             <td><OrderModal purchase={p} sum={p.fmtsum} /></td>
                         </tr>
                     )}
